@@ -24,13 +24,18 @@ def strip_non_nouns(children):
     tmp_str = ''
     build_str = ''
     for c in children:
-        if c.pos == NOUN:
+        ## Following 'or' was meant to handle things like 'head-to-head', needs further
+        ## testing but I haven't found an instance where this creates a false-positive
+        if c.pos == NOUN or (c.pos_ == 'ADV' and c.dep_ == 'compound'):
             seen_noun = True
             build_str += tmp_str
-            build_str = (build_str + ' ' + c.orth_).strip()
+            if build_str.endswith('-'):
+                build_str += c.orth_
+            else:
+                build_str = (build_str + ' ' + c.orth_).strip()
             tmp_str   = ''
         elif seen_noun:
-            if c.pos_ == 'PRT': ## Possesive
+            if c.pos_ == 'PRT' or c.pos_ == 'PUNCT': ## Possesive and/or punctuation
                 tmp_str = tmp_str + c.orth_
             else:
                 tmp_str = ' ' + (tmp_str + ' ' + c.orth_).strip()
