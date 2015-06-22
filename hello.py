@@ -26,12 +26,14 @@ def strip_non_nouns(children):
     for c in children:
         if c.pos == NOUN:
             seen_noun = True
-            if tmp_str:
-                build_str += ' ' + tmp_str
+            build_str += tmp_str
             build_str = (build_str + ' ' + c.orth_).strip()
             tmp_str   = ''
         elif seen_noun:
-            tmp_str = (tmp_str + ' ' + c.orth_).strip()
+            if c.pos_ == 'PRT':
+                tmp_str = tmp_str + c.orth_ #).strip()
+            else:
+                tmp_str = ' ' + (tmp_str + ' ' + c.orth_).strip()
     return build_str
 
 def collapse_tree(token):
