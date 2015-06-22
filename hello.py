@@ -30,8 +30,8 @@ def strip_non_nouns(children):
             build_str = (build_str + ' ' + c.orth_).strip()
             tmp_str   = ''
         elif seen_noun:
-            if c.pos_ == 'PRT':
-                tmp_str = tmp_str + c.orth_ #).strip()
+            if c.pos_ == 'PRT': ## Possesive
+                tmp_str = tmp_str + c.orth_
             else:
                 tmp_str = ' ' + (tmp_str + ' ' + c.orth_).strip()
     return build_str
@@ -39,11 +39,15 @@ def strip_non_nouns(children):
 def collapse_tree(token):
     result = [token]
     for l in reversed(list(token.lefts)):
+        if l.pos_ == 'CONJ':    ## Break at conjuctives
+            break
         if l.children:
             result = [item for sublist in [collapse_tree(l), result] for item in sublist]
         else:
             result.insert(0, l)
     for r in token.rights:
+        if r.pos_ == 'CONJ':    ## Break at conjuctives
+            break
         if r.children:
             result = [item for sublist in [result, collapse_tree(r)] for item in sublist]
         else:
