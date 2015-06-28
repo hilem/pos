@@ -5,4 +5,6 @@ RUN python -m spacy.en.download
 ENV HOST 0.0.0.0
 EXPOSE 5000
 
-CMD ["python", "hello.py"]
+COPY server.py /usr/src/app/server.py
+
+CMD ["python", "server.py"]
