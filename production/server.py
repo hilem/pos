@@ -6,11 +6,14 @@ import spacy.en
 from flask import Flask
 from flask import jsonify
 from flask import request
-from sets import Set
+try:    ## Note: Attempt to make file Python 2.7.x && 3.x compatible
+    set
+except NameError:
+    from sets import Set as set
 from spacy.parts_of_speech import NOUN
 
 app = Flask(__name__)
-nlp = spacy.en.English()
+nlp = spacy.en.English(load_vectors=False) ## Passing the load_vectors params should save RAM
 logging.basicConfig(format='%(asctime)s|%(levelname)s:%(message)s', level=logging.DEBUG, datefmt='%m/%d/%Y %I:%M:%S %p')
 
 ### Logic:
@@ -60,7 +63,7 @@ def collapse_tree(token):
     return result
 
 def find_noun_phrases(tokens):
-    result_set = Set([])
+    result_set = set([])
     for i, t in enumerate(tokens):
         logging.info('(%s, %s, %s HEAD %s, l#%s, r#%s, iob=%s)', t.orth_, t.pos_, t.dep_, t.head.orth_, t.n_lefts, t.n_rights, t.ent_iob)
         ## need to find examples where a noun that is also a dobj would be the 'subject'
