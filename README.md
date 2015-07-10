@@ -21,4 +21,4 @@ This application takes a string of text as input and outputs identified noun phr
 
 1. `docker run -d -p 5000:5000 quay.io/hilem/pos`
 1. `sudo gunicorn app:app -D -b 0.0.0.0:80`
-1. <Add in missing step>
+1. `<Add in missing step>`
