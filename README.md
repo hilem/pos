@@ -2,6 +2,9 @@
 
 This application takes a string of text as input and outputs identified noun phrases
 
+Hosted here: [45.55.190.144](http://45.55.190.144)
+Usage: `45.55.190.144/?q=QUERY`
+
 
 ### Dependancies
 
