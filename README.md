@@ -10,14 +10,15 @@ This application takes a string of text as input and outputs identified noun phr
 1. [spacy](https://honnibal.github.io/spaCy/quickstart.html#install)
 
 
-### Steps to run locally
+### Running Locally
 
 1. `docker build -t spacy_pre prebuild/.  # This takes forever.`
 1. `docker build -t spacy_post .`
 1. `docker run -p 5000:5000 spacy_post`
 
 
-> Not sure what this is 
+### Alternate Method 
 
-    docker run -d -p 5000:5000 quay.io/hilem/pos
-    sudo gunicorn app:app -D -b 0.0.0.0:80
+1. `docker run -d -p 5000:5000 quay.io/hilem/pos`
+1. `sudo gunicorn app:app -D -b 0.0.0.0:80`
+1. <Add in missing step>
