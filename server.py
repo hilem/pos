@@ -88,7 +88,9 @@ def query():
 
 @app.route('/info')
 def info():
-    return jsonify(hatch_version="1.0", spaCy_version="0.85")
+    return jsonify(
+        pos_version=VERSION,
+        spaCy_version=subprocess.check_output("pip list | grep spacy", shell=True).decode("utf-8"))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
