@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 import logging
 import spacy.en
+import subprocess
 
 from flask import Flask
 from flask import jsonify
@@ -11,6 +12,8 @@ try:    ## Note: Attempt to make file Python 2.7.x && 3.x compatible
 except NameError:
     from sets import Set as set
 from spacy.parts_of_speech import NOUN
+
+VERSION = "1.0.1"
 
 app = Flask(__name__)
 nlp = spacy.en.English(load_vectors=False) ## Passing the load_vectors params should save RAM
@@ -47,14 +50,14 @@ def strip_non_nouns(children):
 def collapse_tree(token):
     result = [token]
     for l in reversed(list(token.lefts)):
-        if l.pos_ == 'CONJ':    ## Break at conjuctives
+        if l.pos_ == 'CONJ' or l.pos_ == 'PUNCT':    ## Break at conjuctives && punctuation
             break
         if l.children:
             result = [item for sublist in [collapse_tree(l), result] for item in sublist]
         else:
             result.insert(0, l)
     for r in token.rights:
-        if r.pos_ == 'CONJ':    ## Break at conjuctives
+        if r.pos_ == 'CONJ' or r.pos_ == 'PUNCT':    ## Break at conjuctives
             break
         if r.children:
             result = [item for sublist in [result, collapse_tree(r)] for item in sublist]
