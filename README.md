@@ -29,6 +29,14 @@ Usage: `45.55.190.144/?q=QUERY`
 1. `docker run -d -p 5000:5000 quay.io/hilem/pos`
 
 
+### DOCKER Tips
+1. Attach to image an image within a bash shell
+- `docker exec -i -t <CONTAINER_NAME> bash`
+1. Delete Unused Images
+- `docker rmi $(docker images --filter dangling=true -q)`
+1. Read logs
+- `docker logs --tail=all <CONTAINER_NAME>`
+
 ### Scratch *ignore*
 1. `sudo gunicorn app:app -D -b 0.0.0.0:80`
 1. `<Add in missing step>`
