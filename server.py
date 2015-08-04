@@ -170,7 +170,7 @@ def info():
         spaCy_version=subprocess.check_output("pip list | grep spacy", shell=True).decode("utf-8"))
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', debug=False)
 
 ## Scratch:
 # tmp = " ".join(map(lambda x: x.orth_ if x.dep_ == 'compound' else '', t.children))
