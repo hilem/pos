@@ -134,6 +134,7 @@ def find_filtered_noun_phrases(tokens):
 
     return list(result_set)
 
+
 @app.route('/')
 def query():
     logging.info(' v   START OF REQUEST   v')
@@ -146,30 +147,19 @@ def query():
     logging.info('result = %s', result)
     return jsonify(nouns=result)
 
+
 @app.route('/filtered_query')
 def filtered_query():
-
     query = request.args.get('q')
     if query is None:
         return jsonify(msg="missing q parameter")
     logging.info('query = %s', query)
     tokens = nlp(query)
-
-    result = find_noun_phrases(tokens)
+    # result = find_noun_phrases(tokens)
     uncommon_result = find_filtered_noun_phrases(tokens)
     uncommon_max = remove_subsets(uncommon_result)
-    filtered = list(filter(lambda itm:itm.lower() not in stop_words, result))
-    uncommon_filtered = list(filter(lambda itm:itm.lower() not in stop_words, uncommon_result))
-
-    ## For exploring
-    # return jsonify(
-    #     not_ignoring_anything=result,
-    #     ignoring_stop_words=filtered,
-    #     ignoring_common_words=uncommon_result,
-    #     ignoring_common_words_and_substrings=uncommon_max,
-    #     ignoring_stop_words_and_common_words=uncommon_filtered
-    #     )
-
+    # filtered = list(filter(lambda itm:itm.lower() not in stop_words, result))
+    # uncommon_filtered = list(filter(lambda itm:itm.lower() not in stop_words, uncommon_result))
     return jsonify(nouns=uncommon_max)
 
 

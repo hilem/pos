@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import logging
 import spacy.en
 import subprocess
+import csv
 
 from flask import Flask
 from flask import jsonify
@@ -18,6 +19,22 @@ VERSION = "1.0.1"
 app = Flask(__name__)
 nlp = spacy.en.English(load_vectors=False) ## Passing the load_vectors params should save RAM
 logging.basicConfig(format='%(asctime)s|%(levelname)s:%(message)s', level=logging.DEBUG, datefmt='%m/%d/%Y %I:%M:%S %p')
+
+
+### Read in a CSV file of known stop words. We will ignore these as noun phrases.
+with open('stopwords.csv', 'r') as f:
+    reader = csv.reader(f)
+    stop_words = list(reader)[0]
+###
+
+### Ignore the n most common words
+common_words_to_ignore = 1000
+probs = [lex.prob for lex in nlp.vocab]
+probs.sort()
+
+is_uncommon_noun = lambda tok: tok.pos == NOUN and tok.prob < probs[-common_words_to_ignore]
+###
+
 
 ### Logic:
 ##  Find non-compound nouns.
@@ -65,17 +82,58 @@ def collapse_tree(token):
             result.append(r)
     return result
 
+### Designed to skip nouns that are common
+def add_noun_phrase(tok, phrase, noun_set):
+    if len(phrase.split()) > 1:
+        noun_set.add(phrase)
+    if is_uncommon_noun(tok):
+        noun_set.add(phrase)
+    else:
+        return noun_set
+    return noun_set
+
+### Excludes noun phrases that are subsets of a larger noun phrase
+### Also excludes phrases of length 4 or more
+def remove_subsets(phrase_list):
+    phrase_list.sort(key = len)
+    phrase_list = phrase_list[::-1]
+    new_set = set([])
+    for np in phrase_list:
+        should_add = 1
+        for np2 in new_set:
+            logging.info('checking if %s is in %s', np, np2)
+            if np in np2:
+                should_add = 0
+        if should_add > 0 and len(np.split()) < 4:
+            new_set.add(np)
+    return list(new_set)
+
 def find_noun_phrases(tokens):
     result_set = set([])
     for i, t in enumerate(tokens):
-        logging.info('(%s, %s, %s HEAD %s, l#%s, r#%s, iob=%s)', t.orth_, t.pos_, t.dep_, t.head.orth_, t.n_lefts, t.n_rights, t.ent_iob)
+        logging.info('(%s, %s, %s HEAD %s, l#%s, r#%s, iob=%s, prob=%f)', t.orth_, t.pos_, t.dep_, t.head.orth_, t.n_lefts, t.n_rights, t.ent_iob, t.prob)
         ## need to find examples where a noun that is also a dobj would be the 'subject'
         if t.pos == NOUN and t.dep_ != 'compound':
             tmp_list = collapse_tree(t)
             tmp = strip_non_nouns(tmp_list)
             logging.info('join result |%s|', tmp)
             result_set.add(tmp)
+
     return list(result_set)
+
+def find_filtered_noun_phrases(tokens):
+    result_set = set([])
+    for i, t in enumerate(tokens):
+        logging.info('(%s, %s, %s HEAD %s, l#%s, r#%s, iob=%s, prob=%f)', t.orth_, t.pos_, t.dep_, t.head.orth_, t.n_lefts, t.n_rights, t.ent_iob, t.prob)
+        ## need to find examples where a noun that is also a dobj would be the 'subject'
+        if t.pos == NOUN and t.dep_ != 'compound':
+            tmp_list = collapse_tree(t)
+            tmp = strip_non_nouns(tmp_list)
+            logging.info('join result |%s|', tmp)
+            result_set = add_noun_phrase(t, tmp, result_set)
+
+    return list(result_set)
+
 
 @app.route('/')
 def query():
@@ -88,6 +146,22 @@ def query():
     result = find_noun_phrases(tokens)
     logging.info('result = %s', result)
     return jsonify(nouns=result)
+
+
+@app.route('/filtered_query')
+def filtered_query():
+    query = request.args.get('q')
+    if query is None:
+        return jsonify(msg="missing q parameter")
+    logging.info('query = %s', query)
+    tokens = nlp(query)
+    # result = find_noun_phrases(tokens)
+    uncommon_result = find_filtered_noun_phrases(tokens)
+    uncommon_max = remove_subsets(uncommon_result)
+    # filtered = list(filter(lambda itm:itm.lower() not in stop_words, result))
+    # uncommon_filtered = list(filter(lambda itm:itm.lower() not in stop_words, uncommon_result))
+    return jsonify(nouns=uncommon_max)
+
 
 @app.route('/info')
 def info():
