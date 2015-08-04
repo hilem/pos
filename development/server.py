@@ -155,12 +155,12 @@ def filtered_query():
         return jsonify(msg="missing q parameter")
     logging.info('query = %s', query)
     tokens = nlp(query)
-    # result = find_noun_phrases(tokens)
-    uncommon_result = find_filtered_noun_phrases(tokens)
-    uncommon_max = remove_subsets(uncommon_result)
-    # filtered = list(filter(lambda itm:itm.lower() not in stop_words, result))
-    # uncommon_filtered = list(filter(lambda itm:itm.lower() not in stop_words, uncommon_result))
-    return jsonify(nouns=uncommon_max)
+
+    uncommon_result         = find_filtered_noun_phrases(tokens)
+    uncommon_max            = remove_subsets(uncommon_result)
+    uncommon_max_filtered   = list(filter(lambda itm:itm.lower() not in stop_words, uncommon_max))
+
+    return jsonify(nouns=uncommon_max_filtered)
 
 
 @app.route('/info')
