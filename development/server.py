@@ -136,7 +136,12 @@ def find_filtered_noun_phrases(tokens):
 
 ### Adapt or remove any complicating punction from our string
 def clean_string(s):
-    mapping = { ord("’") : "'" }
+    mapping = {
+        0x0060 : 0x27,
+        0x00B4 : 0x27,
+        0x2018 : 0x27,
+        0x2019 : 0x27
+    }
     return s.translate(mapping)
 
 @app.route('/')
