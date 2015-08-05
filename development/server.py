@@ -134,6 +134,10 @@ def find_filtered_noun_phrases(tokens):
 
     return list(result_set)
 
+### Adapt or remove any complicating punction from our string
+def clean_string(s):
+    mapping = { ord("’") : "'" }
+    return s.translate(mapping)
 
 @app.route('/')
 def query():
@@ -154,7 +158,9 @@ def filtered_query():
     if query is None:
         return jsonify(msg="missing q parameter")
     logging.info('query = %s', query)
-    tokens = nlp(query)
+
+    query   = clean_string(query)
+    tokens  = nlp(query)
 
     uncommon_result         = find_filtered_noun_phrases(tokens)
     uncommon_max            = remove_subsets(uncommon_result)
