@@ -14,7 +14,7 @@ except NameError:
     from sets import Set as set
 from spacy.parts_of_speech import NOUN
 
-VERSION = "1.0.1"
+VERSION = "1.0.2"
 
 app = Flask(__name__)
 nlp = spacy.en.English(load_vectors=False) ## Passing the load_vectors params should save RAM

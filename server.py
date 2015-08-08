@@ -14,7 +14,7 @@ except NameError:
     from sets import Set as set
 from spacy.parts_of_speech import NOUN
 
-VERSION = "1.0.1"
+VERSION = "1.0.2"
 
 app = Flask(__name__)
 nlp = spacy.en.English(load_vectors=False) ## Passing the load_vectors params should save RAM
@@ -134,6 +134,15 @@ def find_filtered_noun_phrases(tokens):
 
     return list(result_set)
 
+### Adapt or remove any complicating punction from our string
+def clean_string(s):
+    mapping = {
+        0x0060 : 0x27,
+        0x00B4 : 0x27,
+        0x2018 : 0x27,
+        0x2019 : 0x27
+    }
+    return s.translate(mapping)
 
 @app.route('/')
 def query():
@@ -154,13 +163,15 @@ def filtered_query():
     if query is None:
         return jsonify(msg="missing q parameter")
     logging.info('query = %s', query)
-    tokens = nlp(query)
-    # result = find_noun_phrases(tokens)
-    uncommon_result = find_filtered_noun_phrases(tokens)
-    uncommon_max = remove_subsets(uncommon_result)
-    # filtered = list(filter(lambda itm:itm.lower() not in stop_words, result))
-    # uncommon_filtered = list(filter(lambda itm:itm.lower() not in stop_words, uncommon_result))
-    return jsonify(nouns=uncommon_max)
+
+    query   = clean_string(query)
+    tokens  = nlp(query)
+
+    uncommon_result         = find_filtered_noun_phrases(tokens)
+    uncommon_max            = remove_subsets(uncommon_result)
+    uncommon_max_filtered   = list(filter(lambda itm:itm.lower() not in stop_words, uncommon_max))
+
+    return jsonify(nouns=uncommon_max_filtered)
 
 
 @app.route('/info')
